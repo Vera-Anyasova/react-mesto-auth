@@ -240,12 +240,12 @@ function App() {
           <Route
             path="/sign-up"
             element={
-              <Register handleRegister={handleRegister} isLoggedIn={loggedIn} />
+              <Register onRegister={handleRegister} isLoggedIn={loggedIn} />
             }
           />
           <Route
             path="/sign-in"
-            element={<Login handleLogin={handleLogin} isLoggedIn={loggedIn} />}
+            element={<Login onLogin={handleLogin} isLoggedIn={loggedIn} />}
           />
         </Routes>
         <Footer loggedIn={loggedIn} />

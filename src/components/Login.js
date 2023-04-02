@@ -1,6 +1,6 @@
 import React from "react";
 
-function Login({ handleLogin }) {
+function Login({ onLogin }) {
   const [formValue, setFormValue] = React.useState({
     email: "",
     password: "",
@@ -20,7 +20,7 @@ function Login({ handleLogin }) {
     if (!formValue.email || !formValue.password) {
       return;
     }
-    handleLogin(formValue);
+    onLogin(formValue);
   }
 
   return (
