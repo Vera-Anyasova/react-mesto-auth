@@ -4,7 +4,7 @@ import Footer from "./Footer";
 import ImagePopup from "./ImagePopup";
 import api from "../utils/api.js";
 import { CurrentUserContext } from "../contexts/CurrentUserContext";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import EditProfilePopup from "./EditProfilePopup";
 import EditAvatarPopup from "./EditAvatarPopup";
 import AddPlacePopup from "./AddPlacePopup";
@@ -16,7 +16,6 @@ import Login from "./Login";
 import * as auth from "../utils/auth.js";
 import PopupWithInfoWin from "./PopupWithInfoWin";
 import PopupWithInfoError from "./PopupWithInfoError";
-import { useCallback } from "react";
 
 function App() {
   const [isEditAvatarPopupOpen, setIsEditAvatarPopupOpen] = useState(false);
@@ -39,6 +38,7 @@ function App() {
       .authorize(email, password)
       .then((data) => {
         if (data.token) {
+          localStorage.setItem("token", data.token);
           setLoggedIn(true);
           setUserEmail(data.email);
           navigate("/", { replace: true });
@@ -53,32 +53,26 @@ function App() {
   function handleRegister({ email, password }) {
     auth
       .register(email, password)
-      .then((res) => {
-        if (res) {
-          setIsInfoPopupWinOpen(true);
-          navigate("/sign-in", { replace: true });
-        }
-        if (!res) {
-          navigate("/sign-in", { replace: true });
-          setIsInfoPopupErrorOpen(true);
-        }
+      .then(() => {
+        setIsInfoPopupWinOpen(true);
+        navigate("/sign-in", { replace: true });
       })
       .catch((err) => {
+        navigate("/sign-in", { replace: true });
+        setIsInfoPopupErrorOpen(true);
         console.log(err);
       });
   }
 
   const handleTokenCheck = useCallback(() => {
-    if (localStorage.getItem("token")) {
-      const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token");
+    if (token) {
       auth
         .checkToken(token)
         .then((res) => {
-          if (res) {
-            setLoggedIn(true);
-            setUserEmail(res.data.email);
-            navigate("/", { replace: true });
-          }
+          setLoggedIn(true);
+          setUserEmail(res.data.email);
+          navigate("/", { replace: true });
         })
         .catch((err) => {
           console.log(err);
@@ -97,26 +91,30 @@ function App() {
   }
 
   useEffect(() => {
-    api
-      .getInitialCards()
-      .then((res) => {
-        setCards(res);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  }, []);
+    if (loggedIn) {
+      api
+        .getInitialCards()
+        .then((res) => {
+          setCards(res);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
+  }, [loggedIn]);
 
   useEffect(() => {
-    api
-      .getUserIfnoApi()
-      .then((res) => {
-        setCurrentUser(res);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  }, [setCurrentUser]);
+    if (loggedIn) {
+      api
+        .getUserIfnoApi()
+        .then((res) => {
+          setCurrentUser(res);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
+  }, [setCurrentUser, loggedIn]);
 
   function handleCardLike(card) {
     const isLiked = card.likes.some((i) => i._id === currentUser._id);
@@ -248,7 +246,7 @@ function App() {
             element={<Login onLogin={handleLogin} isLoggedIn={loggedIn} />}
           />
         </Routes>
-        <Footer loggedIn={loggedIn} />
+        <Footer />
         <ImagePopup card={selectedCard} onClose={closeAllPopups} />
         <EditAvatarPopup
           isOpen={isEditAvatarPopupOpen}

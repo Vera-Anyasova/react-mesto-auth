@@ -1,14 +1,16 @@
 import React from "react";
+import { useLocation } from "react-router-dom";
 
-function Footer({ loggedIn }) {
+function Footer() {
+  const location = useLocation();
   const year = new Date().getFullYear();
 
-  return loggedIn ? (
-    <footer className="footer">
-      <p className="footer__copyright">© {year} Mesto Russia</p>
-    </footer>
-  ) : (
-    ""
+  return (
+    location.pathname === "/" && (
+      <footer className="footer">
+        <p className="footer__copyright">© {year} Mesto Russia</p>
+      </footer>
+    )
   );
 }
 
